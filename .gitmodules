@@ -1,0 +1,6 @@
+[submodule "src/node_modules/webid"]
+	path = src/node_modules/webid
+	url = git@github.com:magnetik/node-webid.git
+[submodule "src/node_modules/earl"]
+	path = src/node_modules/earl
+	url = git@github.com:magnetik/node-earl.git

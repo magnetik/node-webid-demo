@@ -1,0 +1,30 @@
+extends layout
+
+block content
+	script
+		function logout(elem) {
+			var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+			if (is_chrome) {
+				alert('Chrome does not support this function');
+			}
+			else {
+				if (document.all == null) {
+					if (window.crypto) {
+						try{
+							window.crypto.logout();
+							return false; //firefox ok -- no need to follow the link
+						} catch (err) {//Safari, Opera, Chrome -- try with tis session breaking
+						}
+					} else { //also try with session breaking
+					}
+				} else { // MSIE 6+
+					document.execCommand('ClearAuthenticationCache');
+					return false;
+				}
+				return true;
+			}
+		};
+
+	h1 #{title}
+	p #{error}
+	a(onclick='logout();',href='#') Ask for a new certificate
