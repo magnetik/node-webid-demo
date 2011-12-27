@@ -1,4 +1,4 @@
-var earl = require('node-earl');
+var earl = require('earl');
 
 var earlWebid = function(options) {
 	// Inheritance 
@@ -15,6 +15,11 @@ var earlWebid = function(options) {
 
 };
 earlWebid.prototype.__proto__ = earl.EarlDocument.prototype;
+
+earlWebid.prototype.certificateProvided = function(result) {
+    if (result) { this.getAssertion(":assert1").passed(); }
+    else { this.getAssertion(":assert1").failed(); }
+}
 
 earlWebid.prototype.certificateProvided = function(result) {
     if (result) { this.getAssertion(":assert1").passed(); }

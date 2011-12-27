@@ -4,7 +4,7 @@ var fs = require('fs');
 
 var _ = require('underscore')._;
 
-var webid = require('./webid.js');
+var webid = require('webid');
 
 var jade = require('jade');
 
@@ -81,14 +81,9 @@ https.createServer(options,function (req, res) {
             if(!_.isEmpty(certificate)) {
                 if (configuration.earl) { earlWebID.certificateProvided(true); }
                 var verifAgent = new webid.VerificationAgent(certificate);
-                verifAgent.verify(function(err, profileGraph){
-                    if(err) {
-                        res.writeHead(400,{"Content-Type":"text/plain"});
-                        res.write(profileGraph);
-                    } else {
-                        res.writeHead(200,{"Content-Type":"text/html"});
-                        res.write(profilePage(profileGraph));
-                    }
+                verifAgent.verify(function(profileGraph){
+                    res.writeHead(200,{"Content-Type":"text/html"});
+                    res.write(profilePage(profileGraph));
                     res.end();
 				});
             } else {
