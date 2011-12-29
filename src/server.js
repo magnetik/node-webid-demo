@@ -8,11 +8,6 @@ var webid = require('webid');
 
 var jade = require('jade');
 
-function renderJadeFile(template,options) {
-	var fn = jade.compile(template, options);
-	return fn(options.locals);
-}
-
 // Getting configuration
 var configuration = require("./configuration");
 if (configuration.earl) {
@@ -67,6 +62,29 @@ var profilePage = function(profile) {
     return html
 
 };
+
+var sendPage = function (res, path, locals) {
+    var options = {
+        filename: path
+    };
+    res.writeHead(500,{"Content-Type":"text/html"});
+    var fn = jade.compile(fs.readFileSync('src/template/error.jade'), options);
+    
+    res.write(fn(locals));
+    res.end();
+};
+
+var sendError = function (res, message) {
+    var path = 'src/template/error.jade';
+
+    var locals = {
+        title : 'Error',
+        error : message
+    };
+
+    sendPage(res, path, locals);
+};
+
 // Init earl File
 if (configuration.earl) {
     var earlWebID = new earl.earlWebid();
@@ -81,29 +99,35 @@ https.createServer(options,function (req, res) {
             if(!_.isEmpty(certificate)) {
                 if (configuration.earl) { earlWebID.certificateProvided(true); }
                 var verifAgent = new webid.VerificationAgent(certificate);
-                verifAgent.verify(function(profileGraph){
-                    res.writeHead(200,{"Content-Type":"text/html"});
-                    res.write(profilePage(profileGraph));
-                    res.end();
-				});
+                verifAgent.verify(
+                    function(success,result){
+                        if (success) {
+                            res.writeHead(200,{"Content-Type":"text/html"});
+                            console.log(profileGraph);
+                            res.write(profileGraph);
+                            res.end();
+                        }
+                        else {
+                            switch (result) {
+                                case 'falseWebID':
+                                    var message = 'Your certificate public key is not the one of the FOAF file';
+                                    break;
+                                case 'profileAllKeysWellFormed':
+                                    var message = "Missformed WebID";
+                                    break;
+                                default:
+                                    var message = "WebID error";
+                            }
+                            sendError(res,message)
+                        }
+
+    				});
             } else {
 				if (configuration.earl) { earlWebID.certificateProvided(false); }
                 throw new Error("Certificate not provided");
             }
         } catch(e) {
-			var path = 'src/template/error.jade';
-			var options = {
-				filename: path
-			};
-			var locals = {
-				title : 'Error',
-                error : e.message
-			};
-			res.writeHead(500,{"Content-Type":"text/html"});
-			var fn = jade.compile(fs.readFileSync('src/template/error.jade'), options);
-			
-			res.write(fn(locals));
-			res.end();
+			sendError(res,e.message);
         }
     } else {
         res.writeHead(200,{"Content-Type":"text/html"});
