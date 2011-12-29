@@ -18,51 +18,6 @@ var options = {   key: fs.readFileSync('./ssl/privatekey.pem'),
                   cert: fs.readFileSync('./ssl/certificate.pem'),   
                   requestCert: true }; 
 
-var profilePage = function(profile) {
-    var html = "<html><head><title>Success: "+profile.toArray()[0].subject.valueOf()+"</title></head><body>"
-
-    var depiction = profile.filter(function(t){ return t.predicate.equals("http://xmlns.com/foaf/0.1/depiction") }).toArray();
-    if(depiction.length === 1) {
-        depiction = depiction[0].object.valueOf();
-    } else {
-        depiction = "#";
-    }
-    var familyName = profile.filter(function(t){ return t.predicate.equals("http://xmlns.com/foaf/0.1/family_name") }).toArray();
-    if(familyName.length === 1) {
-        familyName = familyName[0].object.valueOf();
-    } else {
-        familyName = "";
-    }
-
-    var givenName = profile.filter(function(t){ return t.predicate.equals("http://xmlns.com/foaf/0.1/givenname") }).toArray();
-    if(givenName.length === 1) {
-        givenName = givenName[0].object.valueOf();
-    } else {
-        givenName = "";
-    }
-
-    var nick = profile.filter(function(t){ return t.predicate.equals("http://xmlns.com/foaf/0.1/nick") }).toArray();
-    if(nick.length === 1) {
-        nick = nick[0].object.valueOf();
-    } else {
-        nick = "";
-    }
-
-    var homepage = profile.filter(function(t){ return t.predicate.equals("http://xmlns.com/foaf/0.1/homepage") }).toArray();
-    if(homepage.length === 1) {
-        homepage = homepage[0].object.valueOf();
-    } else {
-        homepage = "";
-    }
-
-    html = html + "<p><img src='"+depiction+"'></img>";
-    html = html + "<a href='"+homepage+"'>"+givenName+" "+familyName+" ("+nick+")</a></p>";
-
-    html = html + "</body></html>";
-    return html
-
-};
-
 var sendPage = function (res, path, locals) {
     var options = {
         filename: path
@@ -103,8 +58,9 @@ https.createServer(options,function (req, res) {
                     function(success,result){
                         if (success) {
                             res.writeHead(200,{"Content-Type":"text/html"});
-                            console.log(profileGraph);
-                            res.write(profileGraph);
+                            var foaf = new webid.Foaf(result);
+                            console.log(foaf.parse());
+                            //res.write(webid.foafParse(result));
                             res.end();
                         }
                         else {
