@@ -18,11 +18,11 @@ var options = {   key: fs.readFileSync('./ssl/privatekey.pem'),
                   cert: fs.readFileSync('./ssl/certificate.pem'),   
                   requestCert: true }; 
 
-var sendPage = function (res, path, locals) {
+var sendPage = function (res, code, path, locals) {
     var options = {
         filename: path
     };
-    res.writeHead(500,{"Content-Type":"text/html"});
+    res.writeHead(code,{"Content-Type":"text/html"});
     var fn = jade.compile(fs.readFileSync('src/template/error.jade'), options);
     
     res.write(fn(locals));
@@ -37,7 +37,7 @@ var sendError = function (res, message) {
         error : message
     };
 
-    sendPage(res, path, locals);
+    sendPage(res, 500, path, locals);
 };
 
 // Init earl File
@@ -54,30 +54,33 @@ https.createServer(options,function (req, res) {
             if(!_.isEmpty(certificate)) {
                 if (configuration.earl) { earlWebID.certificateProvided(true); }
                 var verifAgent = new webid.VerificationAgent(certificate);
-                verifAgent.verify(
-                    function(success,result){
-                        if (success) {
-                            res.writeHead(200,{"Content-Type":"text/html"});
-                            var foaf = new webid.Foaf(result);
-                            console.log(foaf.parse());
-                            //res.write(webid.foafParse(result));
-                            res.end();
+                verifAgent.verify(function(success,result){
+                    if (success) {
+                        var foaf = new webid.Foaf(result);
+                        sendPage(res, 200, "src/template/profile.jade", foaf.parse());
+                    }
+                    else {
+                        switch (result) {
+                            case 'certificateProvidedSAN':
+                                var message = 'No valide Certificate Alternative Name in your certificate';
+                                break;
+                            case 'profileWellFormed':
+                                var message = 'Can\'t load your foaf file (RDF may not be valid)';
+                                break;
+                            case 'falseWebID':
+                                var message = 'Your certificate public key is not the one of the FOAF file';
+                                break;
+                            case 'profileAllKeysWellFormed':
+                                var message = "Missformed WebID";
+                                break;
+                            default:
+                                var message = "Unknown WebID error";
+                                break;
                         }
-                        else {
-                            switch (result) {
-                                case 'falseWebID':
-                                    var message = 'Your certificate public key is not the one of the FOAF file';
-                                    break;
-                                case 'profileAllKeysWellFormed':
-                                    var message = "Missformed WebID";
-                                    break;
-                                default:
-                                    var message = "WebID error";
-                            }
-                            sendError(res,message)
-                        }
+                        sendError(res,message);
+                    }
 
-    				});
+				});
             } else {
 				if (configuration.earl) { earlWebID.certificateProvided(false); }
                 throw new Error("Certificate not provided");
