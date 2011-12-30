@@ -23,7 +23,7 @@ var sendPage = function (res, code, path, locals) {
         filename: path
     };
     res.writeHead(code,{"Content-Type":"text/html"});
-    var fn = jade.compile(fs.readFileSync('src/template/error.jade'), options);
+    var fn = jade.compile(fs.readFileSync(path), options);
     
     res.write(fn(locals));
     res.end();
