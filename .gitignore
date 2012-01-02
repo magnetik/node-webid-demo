@@ -2,3 +2,4 @@
 /src/node_modules/jade
 /src/node_modules/.bin
 /src/node_modules/underscore
+/src/node_modules/express
