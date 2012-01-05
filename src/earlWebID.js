@@ -10,7 +10,8 @@ var earlWebid = function(options) {
     // Initialise tests
     // TODO: could be load from a rdf file into our graph
     this.addAssertion(":assert1", ":certificate", "wit:certificateProvided");
-    this.addAssertion(":assert2", ":certificate", "wit:certificateProvidedSAN")
+    this.addAssertion(":assert2", ":certificate", "wit:certificateProvidedSAN");
+    this.addAssertion(":assert3", ":certificate", "wit:webidAuthentication")
     
 
 };

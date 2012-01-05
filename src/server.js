@@ -43,7 +43,7 @@ app.configure(function() {
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
+  app.use(express.session({ secret: 'a big secret' }));
   app.use(app.router);
   app.use(express.static(path.join(__dirname,'template','static')));
 });
@@ -54,9 +54,7 @@ app.get('/login', function(req, res){
         var certificate = req.connection.getPeerCertificate();
         if (!_.isEmpty(certificate)) {
             // If the user provite a certificate, verify it
-            if (configuration.earl) {
-                earlWebID.certificateProvided(true);
-            }
+            if (configuration.earl) { earlWebID.certificateProvided(true); }
             var verifAgent = new webid.VerificationAgent(certificate);
             verifAgent.verify(function (success, result) {
                 if (success) {

@@ -1,2 +1,2 @@
-exports.port = 8081
-exports.earl = true
+exports.port = 8081;
+exports.earl = true;
