@@ -1,0 +1,9 @@
+extends layout
+
+block content
+	p Welcome on your wall
+	h2 Liste des messages
+	ul
+		each message in messages
+			li= message
+		

@@ -11,9 +11,6 @@ var webid = require('webid');
 
 // Getting configuration
 var configuration = require("./configuration");
-if (configuration.earl) {
-    var earl = require('./earlWebID');
-}
 
 var options = {
     key: fs.readFileSync('./ssl/privatekey.pem'),
@@ -22,14 +19,18 @@ var options = {
 };
 var sendError = function (res, message) {
     res.render('error.jade', {title: 'Error', error: message});
-    };
-
-// Init earl File
-if (configuration.earl) {
-    var earlWebID = new earl.earlWebid();
-}
+};
 
 console.log("trying to create server at " + configuration.port);
+
+var listMessages = {
+                    'http://webid.fcns.eu/people/Example/card#me' : [
+                                                                    {message: "Coucou", date: "01/02"},
+                                                                    {message: "Toto", date: "02/03"}
+                                                                    ]
+                    };
+
+listMessage['http://webid.fcns.eu/people/Example/card#me']
 
 var app = require('express').createServer(options);
 
@@ -54,12 +55,14 @@ app.get('/login', function(req, res){
         var certificate = req.connection.getPeerCertificate();
         if (!_.isEmpty(certificate)) {
             // If the user provite a certificate, verify it
-            if (configuration.earl) { earlWebID.certificateProvided(true); }
             var verifAgent = new webid.VerificationAgent(certificate);
             verifAgent.verify(function (success, result) {
                 if (success) {
+                    req.session.identified = true;
                     var foaf = new webid.Foaf(result);
-                    res.render('profile.jade', foaf.parse());
+                    var foafFile = foaf.parse();
+                    req.session.foafFile = foafFile;
+                    res.render('profile.jade', foafFile);
                 } else {
                     switch (result) {
                     case 'certificateProvidedSAN':
@@ -83,13 +86,26 @@ app.get('/login', function(req, res){
 
             });
         } else {
-            if (configuration.earl) {
-                earlWebID.certificateProvided(false);
-            }
             throw new Error("Certificate not provided");
         }
     } catch (e) {
         sendError(res, e.message);
+    }
+});
+
+app.get('/wall', function(req, res) {
+    if (req.session.identified == true) {
+        var me = req.session.foafFile;
+        var personalMessage = [];
+        _.each(me.knows, function(person) {
+            // Chercher dans la base de donnée les messages de "person"
+            _.union(personalMessage,listMessages[person]);
+
+        });
+        res.render('wall.jade', { title: "Wall", messages: personalMessage });
+    }
+    else {
+        res.redirect("/login");
     }
 });
 
