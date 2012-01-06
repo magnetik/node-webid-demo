@@ -30,7 +30,7 @@ var listMessages = {
                                                                     ]
                     };
 
-listMessage['http://webid.fcns.eu/people/Example/card#me']
+listMessages['http://webid.fcns.eu/people/Example/card#me'];
 
 var app = require('express').createServer(options);
 

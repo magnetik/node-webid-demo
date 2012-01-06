@@ -5,3 +5,7 @@ block content
 	ul
 		li WebID: #{webid}
 		li Birthday: #{birthday}
+	h2 List of friends
+	ul
+		each person in knows
+			li= person
