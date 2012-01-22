@@ -25,9 +25,13 @@ console.log("trying to create server at " + configuration.port);
 
 var listMessages = {
                     'http://webid.fcns.eu/people/Example/card#me' : [
-                                                                    {message: "Coucou", date: "01/02"},
-                                                                    {message: "Toto", date: "02/03"}
-                                                                    ]
+                                                                    "Coucou",
+                                                                    "Toto"
+                                                                    ],
+                    'http://fcns.eu/people/tintin/card#me' :    [
+                                                                    "Je suis Tintin, et je laisse des messages idiots sur mon mur !",
+                                                                    "Hello world !"
+                                                                ]
                     };
 
 listMessages['http://webid.fcns.eu/people/Example/card#me'];
@@ -99,7 +103,10 @@ app.get('/wall', function(req, res) {
         var personalMessage = [];
         _.each(me.knows, function(person) {
             // Chercher dans la base de donnée les messages de "person"
-            _.union(personalMessage,listMessages[person]);
+            var messages = _.flatten(listMessages[person]);
+            _.each(messages, function(mess) {
+                personalMessage.push(mess);
+            });
 
         });
         res.render('wall.jade', { title: "Wall", messages: personalMessage });
