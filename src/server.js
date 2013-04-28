@@ -36,7 +36,7 @@ var listMessages = {
 
 listMessages['http://webid.fcns.eu/people/Example/card#me'];
 
-var app = require('express').createServer(options);
+var app = express();
 
 // configure Express
 app.configure(function() {
@@ -55,20 +55,18 @@ app.configure(function() {
 
 app.get('/login', function(req, res){
     try {
-        // Ask for user cretificate
+        // Ask for user certificate
         var certificate = req.connection.getPeerCertificate();
         if (!_.isEmpty(certificate)) {
             // If the user provite a certificate, verify it
             var verifAgent = new webid.VerificationAgent(certificate);
-            verifAgent.verify(function (success, result) {
-                if (success) {
-                    req.session.identified = true;
-                    var foaf = new webid.Foaf(result);
-                    var foafFile = foaf.parse();
-                    req.session.foafFile = foafFile;
-                    res.render('profile.jade', foafFile);
-                } else {
-                    switch (result) {
+            verifAgent.verify(function (result) {
+				var foaf = new webid.Foaf(result);
+				req.session.profile = foaf.parse();
+				req.session.identified = true;
+				res.redirect('/profile');
+            }, function(result) {
+				switch (result) {
                     case 'certificateProvidedSAN':
                         var message = 'No valide Certificate Alternative Name in your certificate';
                         break;
@@ -86,20 +84,28 @@ app.get('/login', function(req, res){
                         break;
                     }
                     sendError(res, message);
-                }
-
-            });
+				});
         } else {
             throw new Error("Certificate not provided");
         }
     } catch (e) {
-        sendError(res, e.message);
+       sendError(res, e.message);
+    }
+});
+
+app.get('/profile', function(req, res) {
+    if (req.session.identified == true) {
+		res.render('profile.jade', {title: 'Your profile', profile: req.session.profile});
+	}
+    else {
+        res.redirect("/login");
     }
 });
 
 app.get('/wall', function(req, res) {
     if (req.session.identified == true) {
         var me = req.session.foafFile;
+		console.log(me);
         var personalMessage = [];
         _.each(me.knows, function(person) {
             // Chercher dans la base de donnée les messages de "person"
@@ -120,6 +126,6 @@ app.get('/', function(req, res) {
     res.render('index.jade', { title: "Home" });
 });
 
-app.listen(configuration.port);
+https.createServer(options, app).listen(configuration.port);
 
 console.log("server running at " + configuration.port);
