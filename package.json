@@ -1,0 +1,12 @@
+{
+  "name": "node-webid-demo",
+  "description": "Node webID demo",
+  "homepage": "https://github.com/magnetik/node-webid-demo",
+  "version": "0.0.2",
+  "dependencies": {
+    "webid": "*",
+	"express": "*",
+	"underscore": "*",
+	"jade": "*"
+  }
+}

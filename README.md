@@ -1,15 +1,19 @@
 #node-webid-demo
 
-Example of Node.js implementation using the node-webid library : https://github.com/magnetik/node-webid
+Example of Node.js implementation using the node-webid library: https://github.com/magnetik/node-webid
 
-In addition, this examples uses :
+In addition, this examples uses:
 
 *  Express (http://expressjs.com)
 *  Jade (http://jade-lang.com) 
 
 ##Usage
 
-Simple ! Just type `node src/server.js`
+Simple! 
+
+* Install dependencies: `npm install`
+* Execute: `node src/server.js`
+* Visit the test server webpage: [https://127.0.0.1]
 
 ##Licence
 
